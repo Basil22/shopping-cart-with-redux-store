@@ -22,7 +22,6 @@ function Items() {
 
   const handleClickBuy = (item: ItemType) => {
     dispatch(addToCart({ ...item, quantity: 1 }));
-    console.log({ cartItems });
   };
 
   return (
@@ -61,7 +60,8 @@ function Items() {
       </Box>
       <Box>
         <Typography variant="h6" display={"inline"}>
-          Total: ${cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)}
+          Total: $
+          {cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)}
         </Typography>
       </Box>
     </Box>
