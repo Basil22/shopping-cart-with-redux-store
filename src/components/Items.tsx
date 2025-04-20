@@ -1,7 +1,11 @@
 import { Badge, Box, Button, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store";
-import { addToCart } from "../store/reducers/cartSlice";
+import {
+  addToCart,
+  clearCart,
+  removeItemFromCart,
+} from "../store/reducers/cartSlice";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 
 type ItemType = {
@@ -20,8 +24,25 @@ function Items() {
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const dispatch = useDispatch<AppDispatch>();
 
+  let toCartClicked: Boolean = false;
+
   const handleClickBuy = (item: ItemType) => {
     dispatch(addToCart({ ...item, quantity: 1 }));
+    toCartClicked = !toCartClicked;
+  };
+
+  const handleRemoveItem = (item: ItemType) => {
+    dispatch(
+      removeItemFromCart({
+        ...item,
+        quantity: 1,
+      })
+    );
+  };
+
+  const handleClearCart = () => {
+    dispatch(clearCart());
+    console.log(cartItems);
   };
 
   return (
@@ -31,13 +52,15 @@ function Items() {
         {items.map((item) => (
           <li key={item.name} style={{ marginBottom: "20px" }}>
             {item.name} - ${item.price}
-            <Button
-              sx={{ ml: 1 }}
-              variant="outlined"
-              onClick={() => handleClickBuy(item)}
-            >
-              Buy
-            </Button>
+            {!toCartClicked && (
+              <Button
+                sx={{ ml: 1 }}
+                variant="outlined"
+                onClick={() => handleClickBuy(item)}
+              >
+                Add to cart
+              </Button>
+            )}
           </li>
         ))}
       </ul>
@@ -54,6 +77,20 @@ function Items() {
           {cartItems.map((item) => (
             <li key={item.name} style={{ marginBottom: "20px" }}>
               {item.name} - ${item.price} - {item.quantity}
+              <Button
+                variant="contained"
+                sx={{ ml: 1 }}
+                onClick={() => handleRemoveItem(item)}
+              >
+                -
+              </Button>
+              <Button
+                variant="contained"
+                sx={{ ml: 1 }}
+                onClick={() => handleClickBuy(item)}
+              >
+                +
+              </Button>
             </li>
           ))}
         </ul>
@@ -63,6 +100,11 @@ function Items() {
           Total: $
           {cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)}
         </Typography>
+        {cartItems.length > 0 && (
+          <Button sx={{ ml: 2 }} variant="contained" onClick={handleClearCart}>
+            Clear cart
+          </Button>
+        )}
       </Box>
     </Box>
   );
