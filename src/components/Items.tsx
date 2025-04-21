@@ -1,7 +1,15 @@
-import { Badge, Box, Button, Typography } from "@mui/material";
+import {
+  Badge,
+  Box,
+  Button,
+  List,
+  ListItem,
+  ListItemButton,
+  Typography,
+} from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store";
-import { addToCart } from "../store/reducers/cartSlice";
+import { addToCart, removeItemFromCart } from "../store/reducers/cartSlice";
 import ItemType from "../type/ItemType";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useNavigate } from "react-router-dom";
@@ -19,16 +27,22 @@ function Items() {
 
   const navigate = useNavigate();
 
-  let toCartClicked: Boolean = false;
-
   const handleClickBuy = (item: ItemType) => {
     dispatch(addToCart({ ...item, quantity: 1 }));
-    toCartClicked = !toCartClicked;
+  };
+
+  const handleRemoveItem = (item: ItemType) => {
+    dispatch(
+      removeItemFromCart({
+        ...item,
+        quantity: 1,
+      })
+    );
   };
 
   return (
     <Box>
-      <Typography variant="h4" display={"inline"}>
+      <Typography variant="h3" fontWeight={"bold"} display={"inline"}>
         Items
       </Typography>
       <Button
@@ -36,26 +50,57 @@ function Items() {
         sx={{ ml: 3, height: "60px" }}
         onClick={() => navigate("/cart")}
       >
-        <Badge badgeContent={cartItems.length} color="primary">
+        <Badge
+          badgeContent={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+          color="primary"
+        >
           <ShoppingCartIcon />
         </Badge>
       </Button>
-      <ul>
-        {items.map((item) => (
-          <li key={item.name} style={{ marginBottom: "20px" }}>
-            {item.name} - ${item.price}
-            {!toCartClicked && (
-              <Button
-                sx={{ ml: 1 }}
-                variant="outlined"
-                onClick={() => handleClickBuy(item)}
-              >
-                Add to cart
-              </Button>
-            )}
-          </li>
-        ))}
-      </ul>
+      <List>
+        {items.map((item) => {
+          const cartItem = cartItems.find(
+            (cartItem) => cartItem.name === item.name
+          );
+          const quantity = cartItem ? cartItem.quantity : 0;
+
+          return (
+            <ListItem key={item.name} style={{ marginBottom: "20px" }}>
+              {item.name} - ${item.price}
+              {cartItem ? (
+                <Box
+                  sx={{ display: "inline-flex", alignItems: "center", ml: 5 }}
+                >
+                  <ListItemButton onClick={() => handleRemoveItem(item)}>
+                    -
+                  </ListItemButton>
+                  <Typography sx={{ mx: 1 }}>{quantity}</Typography>
+                  <Button onClick={() => handleClickBuy(item)}>+</Button>
+                </Box>
+              ) : (
+                <Button
+                  sx={{ ml: 5 }}
+                  variant="contained"
+                  onClick={() => handleClickBuy(item)}
+                >
+                  Add to cart
+                </Button>
+              )}
+            </ListItem>
+          );
+        })}
+      </List>
+      <Box>
+        {cartItems.length > 0 && (
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => navigate("/cart")}
+          >
+            Go to Cart
+          </Button>
+        )}
+      </Box>
     </Box>
   );
 }
